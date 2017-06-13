@@ -1,0 +1,32 @@
+{
+  "name": "FastLEDSim",
+  "version": "0.0.1",
+  "description": "FastLED Simulator",
+  "main": "index.js",
+  "scripts": {
+    "env": "env",
+    "setup": "ln -s ../../tools/pre-push .git/hooks/",
+    "lint": "git ls-files | grep \\.js$ | xargs -L1 jshint",
+    "test": "istanbul cover _mocha -- -R spec",
+    "pretest": "npm run lint",
+    "posttest": "istanbul check-coverage --branches 100 --functions 100 --statements 100 --lines 100"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/loughmiller/FastLEDSim.git"
+  },
+  "author": "Scott Loughmiller",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/loughmiller/FastLEDSim/issues"
+  },
+  "homepage": "https://github.com/loughmiller/FastLEDSim",
+  "dependencies": {
+    "underscore": "1.8.3"
+  },
+  "devDependencies": {
+    "eslint": "^4.0.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.4.2"
+  }
+}
