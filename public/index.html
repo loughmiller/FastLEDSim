@@ -61,44 +61,68 @@
   //  MAIN LOOP
   ////////////////////////////////////////////////////////////////////////
 
-  const baseInteral = 80;
+  const baseInterval = 300;
+  const minInterval = 10;
+  const randomness = 100;
 
-  let nextTime = millis();
-  let interval = baseInteral;
-  let pos = 0;
+  let ladder0 = ladderStructMaker();
 
-  let n = 0;
+  let ladder1 = ladderStructMaker();
+  ladder1.nextTime = millis() + 1500;
+
+  let ladder2 = ladderStructMaker();
+  ladder2.nextTime = millis() + 600;
 
   function loop() {
     let currentTime = millis();
-    ladder(currentTime);
+    clear();
+
+    ladder0 = ladder('#FF5088', currentTime, ladder0);
+    ladder1 = ladder('#0000FF', currentTime, ladder1);
+    ladder2 = ladder('#AA00BB', currentTime, ladder2);
+
+    FastLED.show();
   }
 
-  function ladder(currentTime) {
+  function ladder(color, currentTime, ladder) {
     let x;
+    let frameCount = ROWS + 4;
+    let currentFrame = ladder.frame % frameCount;
 
-    if (currentTime >= nextTime) {
-      nextTime = nextTime + interval;
-      interval = interval / 1.1;
+    if (currentTime >= ladder.nextTime) {
 
-      // DISPLAY HERE
-      y = ROWS - ((n % ROWS) + 1);
-
-      if (y == 0) {
-        interval = baseInteral;
+      if (currentFrame == 0) {
+        ladder.interval = baseInterval + (Math.round(Math.random()*randomness) - randomness/2);
       }
 
-      // console.log('y', y);
+      ladder.nextTime = currentTime + ladder.interval;
+
+      ladder.frame = ladder.frame + 1;
+      ladder.interval = Math.max(ladder.interval / 1.1, minInterval);
+
+      // if (frame <= frameCount) {
+      //   console.log(currentTime, nextTime, frame, currentFrame);
+      // }
+    }
+
+    // DISPLAY HERE
+    y = ROWS - (currentFrame + 1);
+    if (y > 0) {
       for (x=0; x<COLUMNS; x++) {
-        leds[xy2Pos(x, y)] = 'rgba(100%, 0%, 0%, 1)';
-        leds[xy2Pos(x, (y+1) % 60)] = OFF;
+        leds[xy2Pos(x, y)] = color;
       }
+    } else {
+      setAll(color);
+    }
 
+    return ladder;
+  }
 
-      // SEND
-      FastLED.show();
-
-      n = n + 1;
+  function ladderStructMaker() {
+    return {
+      frame : 0,
+      nextTime : 0,
+      interval : baseInterval
     }
   }
 
@@ -111,6 +135,20 @@
     }
 
     return pos;
+  }
+
+  function setAll(color) {
+    let i;
+
+    for (i=0; i<NUM_LEDS; i=i+1) {
+      leds[i] = color;
+    }
+
+    FastLED.show();
+  }
+
+  function clear() {
+    setAll(OFF);
   }
 
   ////////////////////////////////////////////////////////////////////////
