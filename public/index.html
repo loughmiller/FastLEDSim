@@ -1,0 +1,145 @@
+<html>
+<head>
+</head>
+<body>
+  <canvas id="canvas" width="800" height="1000"></canvas>
+</body>
+<script>
+'use strict';
+
+  var canvas = document.getElementById('canvas');
+  var ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, 10000, 10000);
+
+  const OFFSET = 20;
+  const NUM_LEDS = 360;
+  const COLUMNS = 6;
+  const ROWS = NUM_LEDS / COLUMNS;
+  const SIZE = 5;
+  const X_SPACING = SIZE + 8;
+  const Y_SPACING = SIZE + 8;
+  const OFF = '#222222';
+
+  let x, y;
+
+  ctx.fillStyle = OFF;
+  for (x=0; x<COLUMNS; x=x+1) {
+    for (y=0; y<ROWS; y=y+1) {
+      ctx.fillRect((x * X_SPACING) + OFFSET,
+        (y * Y_SPACING) + OFFSET,
+        SIZE,
+        SIZE);
+    }
+  }
+
+  let leds = [];
+
+  for (let i=0; i<NUM_LEDS;i++) {
+    leds[i] = OFF;
+  }
+
+  ////////////////////////////////////////////////////////////////////////
+  //  SIMULATED API
+  ////////////////////////////////////////////////////////////////////////
+  const FastLED = {
+    show : () => {
+      for (let i=0; i<NUM_LEDS; i++) {
+        displayLED(i, leds[i]);
+      }
+    }
+  }
+
+  function millis() {
+    return Date.now();
+  }
+
+
+
+  ////////////////////////////////////////////////////////////////////////
+  //  MAIN LOOP
+  ////////////////////////////////////////////////////////////////////////
+
+  const baseInteral = 80;
+
+  let nextTime = millis();
+  let interval = baseInteral;
+  let pos = 0;
+
+  let n = 0;
+
+  function loop() {
+    let currentTime = millis();
+    ladder(currentTime);
+  }
+
+  function ladder(currentTime) {
+    let x;
+
+    if (currentTime >= nextTime) {
+      nextTime = nextTime + interval;
+      interval = interval / 1.1;
+
+      // DISPLAY HERE
+      y = ROWS - ((n % ROWS) + 1);
+
+      if (y == 0) {
+        interval = baseInteral;
+      }
+
+      // console.log('y', y);
+      for (x=0; x<COLUMNS; x++) {
+        leds[xy2Pos(x, y)] = 'rgba(100%, 0%, 0%, 1)';
+        leds[xy2Pos(x, (y+1) % 60)] = OFF;
+      }
+
+
+      // SEND
+      FastLED.show();
+
+      n = n + 1;
+    }
+  }
+
+  function xy2Pos(x, y) {
+    let pos = x * ROWS;
+    if (x % 2 === 0) {
+      pos = pos + y;
+    } else {
+      pos = pos + ((ROWS - 1) - y);
+    }
+
+    return pos;
+  }
+
+  ////////////////////////////////////////////////////////////////////////
+  //  HELPERS
+  ////////////////////////////////////////////////////////////////////////
+  function displayLED(pos, color) {
+    let x = Math.floor(pos / ROWS);
+    let y;
+
+    if (x % 2) {
+      y = (ROWS - 1) - (pos % ROWS);
+    } else {
+      y = pos % ROWS;
+    }
+
+    ctx.fillStyle = color;
+    ctx.fillRect(((x) * X_SPACING) + OFFSET,
+      (y * Y_SPACING) + OFFSET,
+      SIZE,
+      SIZE);
+  }
+
+
+  ////////////////////////////////////////////////////////////////////////
+  //  LOOP
+  ////////////////////////////////////////////////////////////////////////
+  setInterval(() => {
+    loop();
+  }, 1);
+
+</script>
+</html>
